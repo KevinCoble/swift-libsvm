@@ -79,6 +79,67 @@ class SVMTests: XCTestCase {
         }
     }
     
+    func testThreeStateClassification() {
+        //  Create a data set
+        let data = DataSet(dataType: .Classification, inputDimension: 2, outputDimension: 1)
+        do {
+            try data.addDataPoint(input: [0.2, 0.9], output:0)
+            try data.addDataPoint(input: [0.8, 0.3], output:0)
+            try data.addDataPoint(input: [0.5, 0.6], output:0)
+            try data.addDataPoint(input: [0.2, 0.7], output:1)
+            try data.addDataPoint(input: [0.2, 0.3], output:1)
+            try data.addDataPoint(input: [0.4, 0.5], output:1)
+            try data.addDataPoint(input: [0.5, 0.4], output:2)
+            try data.addDataPoint(input: [0.3, 0.2], output:2)
+            try data.addDataPoint(input: [0.7, 0.2], output:2)
+        }
+        catch {
+            print("Invalid data set created")
+        }
+        
+        //  Create an SVM classifier and train
+        let svm = SVMModel(problemType: .C_SVM_Classification, kernelSettings:
+            KernelParameters(type: .RadialBasisFunction, degree: 0, gamma: 0.5, coef0: 0.0))
+        svm.train(data)
+        
+        //  Create a test dataset
+        let testData = DataSet(dataType: .Classification, inputDimension: 2, outputDimension: 1)
+        do {
+            try testData.addTestDataPoint(input: [0.7, 0.6])    //  Expect 0
+            try testData.addTestDataPoint(input: [0.5, 0.7])    //  Expect 0
+            try testData.addTestDataPoint(input: [0.1, 0.6])    //  Expect 1
+            try testData.addTestDataPoint(input: [0.1, 0.4])    //  Expect 1
+            try testData.addTestDataPoint(input: [0.3, 0.1])    //  Expect 2
+            try testData.addTestDataPoint(input: [0.7, 0.1])    //  Expect 2
+        }
+        catch {
+            print("Invalid data set created")
+        }
+        
+        //  Predict on the test data
+        svm.predictValues(testData)
+        
+        //  See if we matched
+        var classLabel : Int
+        do {
+            try classLabel = testData.getClass(0)
+            XCTAssert(classLabel == 0, "first test data point, expect 0")
+            try classLabel = testData.getClass(1)
+            XCTAssert(classLabel == 0, "second test data point, expect 0")
+            try classLabel = testData.getClass(2)
+            XCTAssert(classLabel == 1, "third test data point, expect 1")
+            try classLabel = testData.getClass(3)
+            XCTAssert(classLabel == 1, "fourth test data point, expect 1")
+            try classLabel = testData.getClass(4)
+            XCTAssert(classLabel == 2, "fifth test data point, expect 2")
+            try classLabel = testData.getClass(5)
+            XCTAssert(classLabel == 2, "sixth test data point, expect 2")
+        }
+        catch {
+            print("Error in prediction")
+        }
+    }
+    
     func testRegression() {
         //  Create a data set - function is x1*2 - x2
         let data = DataSet(dataType: .Regression, inputDimension: 2, outputDimension: 1)

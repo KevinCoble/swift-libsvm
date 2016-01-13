@@ -177,10 +177,10 @@ public class SVMModel
                                 
                                 //  Set the sub-problem class labels to 1 and -1
                                 for index in 0..<classificationData.classCount[i] {
-                                    try data.setClass(index, newClass: 1)
+                                    try subProblem.setClass(index, newClass: 1)
                                 }
-                                for index in classificationData.classCount[i]..<data.size {
-                                    try data.setClass(index, newClass: -1)
+                                for index in classificationData.classCount[i]..<subProblem.size {
+                                    try subProblem.setClass(index, newClass: -1)
                                 }
                                 
                                 //  If the probability flag is set, calculate the probabilities
