@@ -77,6 +77,39 @@ class SVMTests: XCTestCase {
         catch {
             print("Error in prediction")
         }
+
+//  Test persistence routines
+//        let path = "SomeValidWritablePath"
+//        do {
+//            try svm.saveToFile(path)
+//        }
+//        catch {
+//            print("Error in writing file")
+//        }
+//        let readSVM = SVMModel(loadFromFile: path)
+//        if let readSVM = readSVM {
+//            readSVM.predictValues(testData)
+//            
+//            //  See if we matched
+//            var classLabel : Int
+//            do {
+//                try classLabel = testData.getClass(0)
+//                XCTAssert(classLabel == 1, "first test data point, expect 1")
+//                try classLabel = testData.getClass(1)
+//                XCTAssert(classLabel == 0, "second test data point, expect 0")
+//                try classLabel = testData.getClass(2)
+//                XCTAssert(classLabel == 0, "third test data point, expect 0")
+//                try classLabel = testData.getClass(3)
+//                XCTAssert(classLabel == 1, "fourth test data point, expect 1")
+//                try classLabel = testData.getClass(4)
+//                XCTAssert(classLabel == 0, "fifth test data point, expect 0")
+//                try classLabel = testData.getClass(5)
+//                XCTAssert(classLabel == 1, "sixth test data point, expect 1")
+//            }
+//            catch {
+//                print("Error in prediction with read SVM")
+//            }
+//        }
     }
     
     func testThreeStateClassification() {
@@ -196,5 +229,4 @@ class SVMTests: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
-
 }

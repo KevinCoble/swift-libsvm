@@ -12,9 +12,9 @@
 
 import Foundation
 
-public enum SVMType     //  SVM problem type
+public enum SVMType: Int     //  SVM problem type
 {
-    case C_SVM_Classification
+    case C_SVM_Classification = 0
     case ν_SVM_Classification
     case OneClassSVM
     case ϵSVMRegression
@@ -68,6 +68,69 @@ public class SVMModel
         Cost = copyFrom.Cost
         weightModifiers = copyFrom.weightModifiers
         probability = copyFrom.probability
+    }
+    
+    public init?(loadFromFile path: String)
+    {
+        //  Initialize all the stored properties (Swift requires this, even when returning nil [supposedly fixed in Swift 2.2)
+        numClasses = 0
+        labels = []
+        ρ = []
+        totalSupportVectors = 0
+        supportVectorCount = []
+        supportVector = []
+        coefficients = []
+        probabilityA = []
+        probabilityB = []
+        kernelParams = KernelParameters(type: .RadialBasisFunction, degree: 0, gamma: 0.5, coef0: 0.0)
+        
+        //  Read the property list
+        let pList = NSDictionary(contentsOfFile: path)
+        if pList == nil {type = .C_SVM_Classification; return nil }
+        let dictionary : Dictionary = pList! as! Dictionary<String, AnyObject>
+        
+        //  Get the training results from the dictionary
+        let typeValue = dictionary["type"] as? NSInteger
+        if typeValue == nil {type = .C_SVM_Classification; return nil }
+        let testType = SVMType(rawValue: typeValue!)
+        if testType == nil {type = .C_SVM_Classification; return nil }
+        type = testType!
+        
+        let numClassValue = dictionary["numClasses"] as? NSInteger
+        if numClassValue == nil { return nil }
+        numClasses = numClassValue!
+        
+        let labelArray = dictionary["labels"] as? NSArray
+        if labelArray == nil { return nil }
+        labels = labelArray! as! [Int]
+        
+        let rhoArray = dictionary["ρ"] as? NSArray
+        if rhoArray == nil { return nil }
+        ρ = rhoArray! as! [Double]
+        
+        let totalSVValue = dictionary["totalSupportVectors"] as? NSInteger
+        if totalSVValue == nil { return nil }
+        totalSupportVectors = totalSVValue!
+        
+        let svCountArray = dictionary["supportVectorCount"] as? NSArray
+        if svCountArray == nil { return nil }
+        supportVectorCount = svCountArray! as! [Int]
+        
+        let svArray = dictionary["supportVector"] as? NSArray
+        if svArray == nil { return nil }
+        supportVector = svArray! as! [[Double]]
+        
+        let coeffArray = dictionary["coefficients"] as? NSArray
+        if coeffArray == nil { return nil }
+        coefficients = coeffArray! as! [[Double]]
+        
+        let probAArray = dictionary["probabilityA"] as? NSArray
+        if probAArray == nil { return nil }
+        probabilityA = probAArray! as! [Double]
+        
+        let probBArray = dictionary["probabilityB"] as? NSArray
+        if probBArray == nil { return nil }
+        probabilityB = probBArray! as! [Double]
     }
     
     public func isνFeasableForData(data: DataSet) -> Bool
@@ -911,6 +974,28 @@ public class SVMModel
         }
         
         return p
+    }
+    
+    ///  Routine to write the model result parameters to a property list path at the provided path
+    public enum SVMWriteErrors: ErrorType { case failedWriting }
+    public func saveToFile(path: String) throws
+    {
+        //  Create a property list of the SVM model
+        var modelDictionary = [String: AnyObject]()
+        modelDictionary["type"] = type.rawValue
+        modelDictionary["numClasses"] = numClasses
+        modelDictionary["labels"] = labels
+        modelDictionary["ρ"] = ρ
+        modelDictionary["totalSupportVectors"] = totalSupportVectors
+        modelDictionary["supportVectorCount"] = supportVectorCount
+        modelDictionary["supportVector"] = supportVector
+        modelDictionary["coefficients"] = coefficients
+        modelDictionary["probabilityA"] = probabilityA
+        modelDictionary["probabilityB"] = probabilityB
+        
+        //  Convert to a property list (NSDictionary) and write
+        let pList = NSDictionary(dictionary: modelDictionary)
+        if !pList.writeToFile(path, atomically: false) { throw SVMWriteErrors.failedWriting }
     }
 }
 
